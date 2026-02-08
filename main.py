@@ -11,7 +11,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 
-np.random.seed(42)
+rng = np.random.default_rng()
 
 # =============================================================================
 # Definitions
@@ -25,14 +25,14 @@ TRUE_SIGMA = 15.0        # Standard deviation of both regimes (known)
 
 # Data
 N_OBSERVATIONS = 300
-OBSERVATION_TIMES = np.sort(np.random.uniform(0, 24, N_OBSERVATIONS))   # NumPy array of timestamps e.g. [0.13, 0.79, 1.24, 1.90, 2,43]
+OBSERVATION_TIMES = np.sort(rng.uniform(0, 24, N_OBSERVATIONS))   # NumPy array of timestamps e.g. [0.13, 0.79, 1.24, 1.90, 2,43]
 DATA = np.zeros(N_OBSERVATIONS)                                         # NumPy array of zeroes, to become an array of values from two Normal distributions
 
 for i, t in enumerate(OBSERVATION_TIMES):
     if t < TRUE_TAU:
-        DATA[i] = np.random.normal(TRUE_MU1, TRUE_SIGMA)
+        DATA[i] = rng.normal(TRUE_MU1, TRUE_SIGMA)
     else:
-        DATA[i] = np.random.normal(TRUE_MU2, TRUE_SIGMA)
+        DATA[i] = rng.normal(TRUE_MU2, TRUE_SIGMA)
 
 # Prior beliefs
 PRIOR_MU1_MU2 = 150.0
@@ -128,9 +128,9 @@ def metropolis_hastings():
     
     for i in range(N_SAMPLES + BURN_IN_ITERATIONS):
         # Propose new hypothesis
-        tau_proposal = tau_current + np.random.normal(0, TAU_PROPOSAL_WIDTH)
-        mu1_proposal = mu1_current + np.random.normal(0, MU_PROPOSAL_WIDTH)
-        mu2_proposal = mu2_current + np.random.normal(0, MU_PROPOSAL_WIDTH)
+        tau_proposal = tau_current + rng.normal(0, TAU_PROPOSAL_WIDTH)
+        mu1_proposal = mu1_current + rng.normal(0, MU_PROPOSAL_WIDTH)
+        mu2_proposal = mu2_current + rng.normal(0, MU_PROPOSAL_WIDTH)
         
         # Compute proposed log-posterior
         proposed_log_post = log_posterior(tau_proposal, mu1_proposal, mu2_proposal, DATA)
@@ -138,7 +138,7 @@ def metropolis_hastings():
         # Accept/reject
         log_ratio = proposed_log_post - current_log_post
         
-        if np.log(np.random.random()) < log_ratio:
+        if np.log(rng.random()) < log_ratio:
             tau_current, mu1_current, mu2_current = tau_proposal, mu1_proposal, mu2_proposal
             current_log_post = proposed_log_post
 
