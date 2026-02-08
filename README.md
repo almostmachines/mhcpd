@@ -33,3 +33,7 @@ Results are printed to the terminal and a visualization is saved to `output/mcmc
 
 - [NumPy](https://numpy.org/) -- numerical computation
 - [Matplotlib](https://matplotlib.org/) -- plotting
+
+## License
+
+[MIT](LICENSE)
