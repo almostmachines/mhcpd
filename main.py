@@ -225,7 +225,7 @@ def main():
     ax.scatter(OBSERVATION_TIMES, DATA, alpha=0.5, s=20, c='steelblue')
     ax.axvline(TRUE_TAU, color='red', linestyle='--', linewidth=2, label=f'True τ = {TRUE_TAU}h')
     ax.axhline(TRUE_MU1, color='blue', linestyle=':', linewidth=2, xmax=TRUE_TAU/24, label=f'True μ₁ = {TRUE_MU1}')
-    ax.axhline(TRUE_MU2, color='orange', linestyle=':', linewidth=2, xmin=TRUE_TAU/24, label=f'True μ₂ = {TRUE_MU2}')
+    ax.axhline(TRUE_MU2, color='purple', linestyle=':', linewidth=2, xmin=TRUE_TAU/24, label=f'True μ₂ = {TRUE_MU2}')
     ax.set_xlabel('Time (hours)')
     ax.set_ylabel('Response time (ms)')
     ax.set_title('Observed Data Over 24 Hours')
