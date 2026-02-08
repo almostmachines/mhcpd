@@ -224,24 +224,24 @@ def main():
     ax = axes[0, 0]
     ax.scatter(OBSERVATION_TIMES, DATA, alpha=0.5, s=20, c='steelblue')
     ax.axvline(TRUE_TAU, color='red', linestyle='--', linewidth=2, label=f'True τ = {TRUE_TAU}h')
-    ax.axhline(TRUE_MU1, color='blue', linestyle=':', alpha=0.7, xmax=TRUE_TAU/24, label=f'True μ₁ = {TRUE_MU1}')
-    ax.axhline(TRUE_MU2, color='orange', linestyle=':', alpha=0.7, xmin=TRUE_TAU/24, label=f'True μ₂ = {TRUE_MU2}')
+    ax.axhline(TRUE_MU1, color='blue', linestyle=':', linewidth=2, xmax=TRUE_TAU/24, label=f'True μ₁ = {TRUE_MU1}')
+    ax.axhline(TRUE_MU2, color='orange', linestyle=':', linewidth=2, xmin=TRUE_TAU/24, label=f'True μ₂ = {TRUE_MU2}')
     ax.set_xlabel('Time (hours)')
     ax.set_ylabel('Response time (ms)')
     ax.set_title('Observed Data Over 24 Hours')
     ax.set_xlim(0, 24)
     ax.set_xticks([0, 6, 12, 18, 24])
-    ax.set_xticklabels(['00:00', '06:00', '12:00', '18:00', '24:00'])
+    ax.set_xticklabels(['0', '6', '12', '18', '24'])
     ax.legend(fontsize=8)
 
     # Plot 2: Posterior of τ (continuous!)
     ax = axes[0, 1]
     ax.hist(samples_tau, bins=100, density=True, alpha=0.7, edgecolor='none', color='steelblue')
     ax.axvline(TRUE_TAU, color='red', linestyle='--', linewidth=2, label=f'True τ = {TRUE_TAU}h')
-    ax.axvline(samples_tau.mean(), color='green', linestyle='-', linewidth=2, label=f'Mean = {samples_tau.mean():.2f}h')
+    ax.axvline(samples_tau.mean(), color='green', linestyle='-', linewidth=2, label=f'Estimated = {samples_tau.mean():.2f}h')
     ax.set_xlabel('Change-point τ (hours)')
     ax.set_ylabel('Posterior density')
-    ax.set_title('When did the change happen? (Continuous τ)')
+    ax.set_title('When did the change happen?')
     tau_margin = max(0.5, (np.percentile(samples_tau, 99) - np.percentile(samples_tau, 1)) * 0.3)
     ax.set_xlim(np.percentile(samples_tau, 1) - tau_margin, np.percentile(samples_tau, 99) + tau_margin)
     ax.legend(fontsize=8)
@@ -250,20 +250,20 @@ def main():
     ax = axes[0, 2]
     ax.hist(samples_mu1, bins=50, density=True, alpha=0.7, edgecolor='none', color='steelblue')
     ax.axvline(TRUE_MU1, color='red', linestyle='--', linewidth=2, label=f'True μ₁ = {TRUE_MU1}')
-    ax.axvline(samples_mu1.mean(), color='green', linestyle='-', linewidth=2, label=f'Mean = {samples_mu1.mean():.1f}')
+    ax.axvline(samples_mu1.mean(), color='green', linestyle='-', linewidth=2, label=f'Estimated = {samples_mu1.mean():.1f}')
     ax.set_xlabel('μ₁ (ms)')
     ax.set_ylabel('Posterior density')
-    ax.set_title('Mean before change')
+    ax.set_title('Mean response time before change')
     ax.legend(fontsize=8)
 
     # Plot 4: Posterior of μ₂
     ax = axes[1, 0]
     ax.hist(samples_mu2, bins=50, density=True, alpha=0.7, edgecolor='none', color='steelblue')
     ax.axvline(TRUE_MU2, color='red', linestyle='--', linewidth=2, label=f'True μ₂ = {TRUE_MU2}')
-    ax.axvline(samples_mu2.mean(), color='green', linestyle='-', linewidth=2, label=f'Mean = {samples_mu2.mean():.1f}')
+    ax.axvline(samples_mu2.mean(), color='green', linestyle='-', linewidth=2, label=f'Estimated = {samples_mu2.mean():.1f}')
     ax.set_xlabel('μ₂ (ms)')
     ax.set_ylabel('Posterior density')
-    ax.set_title('Mean after change')
+    ax.set_title('Mean response time after change')
     ax.legend(fontsize=8)
 
     # Plot 5: Joint posterior of τ and effect size
