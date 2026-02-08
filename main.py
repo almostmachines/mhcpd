@@ -361,7 +361,7 @@ def main():
     ax.legend(fontsize=8)
 
     plt.tight_layout()
-    plt.savefig('output/mcmc_continuous_results.png', dpi=150, bbox_inches='tight')
+    plt.savefig('output/results.png', dpi=150, bbox_inches='tight')
     print("Visualisation saved!")
     print()
     print()
@@ -384,7 +384,7 @@ def main():
     # 3D interactive visualisation
     plot_3d_posterior(samples_tau, samples_mu1, samples_mu2)
 
-    print("Done! Check mcmc_continuous_results.png")
+    print("Done! Check 2D plots in output/results.png")
     print("Interactive 3D posterior saved to output/posterior_3d.html")
 
 if __name__ == "__main__":
