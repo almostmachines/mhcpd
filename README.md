@@ -4,10 +4,10 @@ Bayesian change-point detection using the Metropolis-Hastings MCMC algorithm. Gi
 
 ## The Problem
 
-Imagine server response times are recorded over a 24-hour period. At some unknown point, the mean response time shifts (e.g. due to a deployment or infrastructure change). We observe noisy measurements but don't know:
+Imagine that the levels of dissolved oxygen (mg/L) in stream water are sampled at random over a 24 hour period. At some unknown time, the mean oxygen level shifts. We observe noisy measurements but don't know:
 
 - **When** the change happened (the change-point time, $\tau$)
-- **What** the mean response time was before ($\mu_1$) and after ($\mu_2$) the change
+- **What** the mean oxygen level was before ($\mu_1$) and after ($\mu_2$) the change
 
 Computing the posterior distribution analytically would require integrating over a likelihood with discontinuities at every observation timestamp, making it intractable. Metropolis-Hastings sidesteps this by sampling from the posterior directly, never needing to compute the normalizing constant $p(\text{data})$.
 

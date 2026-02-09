@@ -19,9 +19,10 @@ rng = np.random.default_rng()
 
 # Reality
 TRUE_TAU = 14.5          # Change happens at 2:30 PM (unknown)
-TRUE_MU1 = 120.0         # Mean response time before change (ms) (unknown)
-TRUE_MU2 = 155.0         # Mean response time after change (ms) (unknown)
-TRUE_SIGMA = 15.0        # Standard deviation of both regimes (known)
+TRUE_MU1 = 12.3         # Mean oxygen level before change (mg/L) (unknown)
+TRUE_MU2 = 13.2         # Mean oxygen level after change (mg/L) (unknown)
+TRUE_SIGMA = 0.9        # Standard deviation of both regimes (known)
+TRUE_EFFECT_SIZE = TRUE_MU2 - TRUE_MU1
 
 # Data
 N_OBSERVATIONS = 300
@@ -35,17 +36,17 @@ for i, t in enumerate(OBSERVATION_TIMES):
         DATA[i] = rng.normal(TRUE_MU2, TRUE_SIGMA)
 
 # Prior beliefs
-PRIOR_MU1_MU2 = 150.0
-PRIOR_SIGMA = 50.0
+PRIOR_MU1_MU2 = 15.0
+PRIOR_SIGMA = 5.0
 
 # Initial hypothesis
 INITIAL_HYPOTHESIS_TAU = 12.0  # Start at noon
-INITIAL_HYPOTHESIS_MU1 = DATA[OBSERVATION_TIMES < INITIAL_HYPOTHESIS_TAU].mean() if np.any(OBSERVATION_TIMES < INITIAL_HYPOTHESIS_TAU) else 130.0
-INITIAL_HYPOTHESIS_MU2 = DATA[OBSERVATION_TIMES >= INITIAL_HYPOTHESIS_TAU].mean() if np.any(OBSERVATION_TIMES >= INITIAL_HYPOTHESIS_TAU) else 130.0
+INITIAL_HYPOTHESIS_MU1 = DATA[OBSERVATION_TIMES < INITIAL_HYPOTHESIS_TAU].mean() if np.any(OBSERVATION_TIMES < INITIAL_HYPOTHESIS_TAU) else 15.0
+INITIAL_HYPOTHESIS_MU2 = DATA[OBSERVATION_TIMES >= INITIAL_HYPOTHESIS_TAU].mean() if np.any(OBSERVATION_TIMES >= INITIAL_HYPOTHESIS_TAU) else 15.0
 
 # Algorithm settings
 TAU_PROPOSAL_WIDTH = 0.1    # Standard deviation for τ proposals (hours)
-MU_PROPOSAL_WIDTH = 1.0     # Standard deviation for μ proposals (ms)
+MU_PROPOSAL_WIDTH = 0.2     # Standard deviation for μ proposals (mg/L)
 N_SAMPLES=20000
 BURN_IN_ITERATIONS=2000
 
@@ -184,8 +185,8 @@ def plot_3d_posterior(samples_tau, samples_mu1, samples_mu2):
             name='Posterior samples',
             hovertemplate=(
                 'τ = %{x:.2f}h<br>'
-                'μ₁ = %{y:.1f} ms<br>'
-                'μ₂ = %{z:.1f} ms<extra></extra>'
+                'μ₁ = %{y:.1f} mg/L<br>'
+                'μ₂ = %{z:.1f} mg/L<extra></extra>'
             ),
         ),
         # True values
@@ -208,8 +209,8 @@ def plot_3d_posterior(samples_tau, samples_mu1, samples_mu2):
         title='MCMC Posterior Distribution (τ, μ₁, μ₂)',
         scene=dict(
             xaxis_title='Change-point τ (hours)',
-            yaxis_title='μ₁ — mean before (ms)',
-            zaxis_title='μ₂ — mean after (ms)',
+            yaxis_title='μ₁ — mean before (mg/L)',
+            zaxis_title='μ₂ — mean after (mg/L)',
         ),
         width=900,
         height=700,
@@ -221,23 +222,23 @@ def plot_3d_posterior(samples_tau, samples_mu1, samples_mu2):
 
 def main():
     print_title("STEP 0: Reality")
-    print(f"There was a change-point in server response times r during a 24 hour period")
+    print(f"There was a change-point in dissolved oxygen levels (mg/L) in stream water observed during a 24 hour period")
     print()
-    print(f"  {TRUE_TAU}h                              -- the change-point time")
-    print(f"  r₁ ~ Normal({TRUE_MU1} ms, {TRUE_SIGMA}² ms²)   -- the distribution of response times before τ")
-    print(f"  r₂ ~ Normal({TRUE_MU2} ms, {TRUE_SIGMA}² ms²)   -- the distribution of response times after τ")
-    print(f"  {TRUE_MU2 - TRUE_MU1} ms                            -- the effect-size (change in mean response times)")
+    print(f"  {TRUE_TAU}h                                       -- the change-point time [unknown]")
+    print(f"  Normal({TRUE_MU1} mg/L, {TRUE_SIGMA}² mg/L²)      -- the distribution of oxygen levels before τ [only sigma is known]")
+    print(f"  Normal({TRUE_MU2} mg/L, {TRUE_SIGMA}² mg/L²)      -- the distribution of oxygen levels after τ [only sigma is known]")
+    print(f"  {TRUE_EFFECT_SIZE:.1f} mg/L                  -- the effect-size (change in mean oxygen levels) [unknown]")
     print(f"""
-    We know the true constant standard deviation of {TRUE_SIGMA} ms, however we don't know the change-point
-    time, the mean response time before the change-point ({TRUE_MU1} ms) and after the change-point
-    ({TRUE_MU2} ms), and the effect size. We will estimate those using observed data and a Bayesian model.
+    We know the true constant standard deviation of {TRUE_SIGMA} mg/L, however we don't know the change-point
+    time (14.5h), the mean oxygen level before the change-point ({TRUE_MU1} mg/L) and after the change-point
+    ({TRUE_MU2} mg/L), and the effect size {TRUE_EFFECT_SIZE:.1f}. We will estimate those using observed data and a Bayesian model.
     """)
     print()
 
     print_title("STEP 1: Our observed data")
-    print(f"We have {N_OBSERVATIONS} response time measurements over 24 hours.")
+    print(f"We have {N_OBSERVATIONS} oxygen level measurements over 24 hours.")
     print(f"Observation times range from {OBSERVATION_TIMES[0]:.2f}h to {OBSERVATION_TIMES[-1]:.2f}h.")
-    print(f"Response times range from {DATA.min():.1f}ms to {DATA.max():.1f}ms.")
+    print(f"Oxygen levels range from {DATA.min():.1f}mg/L to {DATA.max():.1f}mg/L.")
     print()
     print()
 
@@ -261,16 +262,16 @@ def main():
     print_title("STEP 4: Results")
     print("POINT ESTIMATES (posterior means):")
     print(f"  Change-point τ:  {samples_tau.mean():.2f}h      (true τ: {TRUE_TAU}h)")
-    print(f"  Before mean μ₁:  {samples_mu1.mean():.1f} ms    (true μ₁: {TRUE_MU1})")
-    print(f"  After mean μ₂:   {samples_mu2.mean():.1f} ms    (true μ₂: {TRUE_MU2})")
+    print(f"  Before mean μ₁:  {samples_mu1.mean():.1f} mg/L    (true μ₁: {TRUE_MU1})")
+    print(f"  After mean μ₂:   {samples_mu2.mean():.1f} mg/L    (true μ₂: {TRUE_MU2})")
     effect_size = samples_mu2 - samples_mu1
-    print(f"  Effect size: {effect_size.mean():.1f} ms         (true effect size: {TRUE_MU2 - TRUE_MU1} ms)")
+    print(f"  Effect size: {effect_size.mean():.1f} mg/L         (true effect size: {TRUE_EFFECT_SIZE:.1f} mg/L)")
     print()
     print("95% CREDIBLE INTERVALS:")
     tau_low, tau_high = np.percentile(samples_tau, [2.5, 97.5])
     print(f"  τ:  [{tau_low:.2f}h, {tau_high:.2f}h]")
-    print(f"  μ₁: [{np.percentile(samples_mu1, 2.5):.1f}, {np.percentile(samples_mu1, 97.5):.1f}] ms")
-    print(f"  μ₂: [{np.percentile(samples_mu2, 2.5):.1f}, {np.percentile(samples_mu2, 97.5):.1f}] ms")
+    print(f"  μ₁: [{np.percentile(samples_mu1, 2.5):.1f}, {np.percentile(samples_mu1, 97.5):.1f}] mg/L")
+    print(f"  μ₂: [{np.percentile(samples_mu2, 2.5):.1f}, {np.percentile(samples_mu2, 97.5):.1f}] mg/L")
     print(f"  Effect size: [{np.percentile(effect_size, 2.5):.1f}, {np.percentile(effect_size, 97.5):.1f}]")
     print()
     # Some probability queries
@@ -290,7 +291,7 @@ def main():
     ax.axhline(TRUE_MU1, color='blue', linestyle=':', linewidth=2, xmax=TRUE_TAU/24, label=f'True μ₁ = {TRUE_MU1}')
     ax.axhline(TRUE_MU2, color='purple', linestyle=':', linewidth=2, xmin=TRUE_TAU/24, label=f'True μ₂ = {TRUE_MU2}')
     ax.set_xlabel('Time (hours)')
-    ax.set_ylabel('Response time (ms)')
+    ax.set_ylabel('Oxygen level (mg/L)')
     ax.set_title('Observed Data Over 24 Hours')
     ax.set_xlim(0, 24)
     ax.set_xticks([0, 6, 12, 18, 24])
@@ -314,9 +315,9 @@ def main():
     ax.hist(samples_mu1, bins=50, density=True, alpha=0.7, edgecolor='none', color='steelblue')
     ax.axvline(TRUE_MU1, color='red', linestyle='--', linewidth=2, label=f'True μ₁ = {TRUE_MU1}')
     ax.axvline(samples_mu1.mean(), color='green', linestyle='-', linewidth=2, label=f'Estimated = {samples_mu1.mean():.1f}')
-    ax.set_xlabel('μ₁ (ms)')
+    ax.set_xlabel('μ₁ (mg/L)')
     ax.set_ylabel('Posterior density')
-    ax.set_title('Mean response time before change')
+    ax.set_title('Mean oxygen level before change')
     ax.legend(fontsize=8)
 
     # Plot 4: Posterior of μ₂
@@ -324,21 +325,21 @@ def main():
     ax.hist(samples_mu2, bins=50, density=True, alpha=0.7, edgecolor='none', color='steelblue')
     ax.axvline(TRUE_MU2, color='red', linestyle='--', linewidth=2, label=f'True μ₂ = {TRUE_MU2}')
     ax.axvline(samples_mu2.mean(), color='green', linestyle='-', linewidth=2, label=f'Estimated = {samples_mu2.mean():.1f}')
-    ax.set_xlabel('μ₂ (ms)')
+    ax.set_xlabel('μ₂ (mg/L)')
     ax.set_ylabel('Posterior density')
-    ax.set_title('Mean response time after change')
+    ax.set_title('Mean oxygen level after change')
     ax.legend(fontsize=8)
 
     # Plot 5: Joint posterior of τ and effect size
     ax = axes[1, 1]
     ax.scatter(samples_tau[::10], effect_size[::10], alpha=0.3, s=5, c='steelblue', label='Posterior samples')
     ax.axvline(TRUE_TAU, color='red', linestyle='--', linewidth=1.5, alpha=0.8, label=f'True τ = {TRUE_TAU}h')
-    ax.axhline(TRUE_MU2 - TRUE_MU1, color='red', linestyle='--', linewidth=1.5, alpha=0.8, label=f'True effect = {TRUE_MU2 - TRUE_MU1:.0f} ms')
+    ax.axhline(TRUE_EFFECT_SIZE, color='red', linestyle='--', linewidth=1.5, alpha=0.8, label=f'True effect = {TRUE_EFFECT_SIZE:.0f} mg/L')
     ax.axvline(samples_tau.mean(), color='green', linestyle='-', linewidth=1.5, alpha=0.8, label=f'Est. τ = {samples_tau.mean():.2f}h')
-    ax.axhline(effect_size.mean(), color='green', linestyle='-', linewidth=1.5, alpha=0.8, label=f'Est. effect = {effect_size.mean():.1f} ms')
+    ax.axhline(effect_size.mean(), color='green', linestyle='-', linewidth=1.5, alpha=0.8, label=f'Est. effect = {effect_size.mean():.1f} mg/L')
     ax.plot(samples_tau.mean(), effect_size.mean(), 'x', color='green', markersize=10, markeredgewidth=2)
     ax.set_xlabel('Change-point τ (hours)')
-    ax.set_ylabel('Effect size μ₂ - μ₁ (ms)')
+    ax.set_ylabel('Effect size μ₂ - μ₁ (mg/L)')
     ax.set_title('Joint posterior: When & How Much?')
     tau_sub = samples_tau[::10]
     eff_sub = effect_size[::10]
