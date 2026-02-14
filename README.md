@@ -1,6 +1,6 @@
 # Change-Point Detection Using the Metropolis Algorithm
 
-Companion script to the (metropolis-algorithm.com)[metropolis-algorithm.com] website.
+Companion script to the [metropolis-algorithm.com](metropolis-algorithm.com) website.
 
 Bayesian change-point detection using the Metropolis algorithm. Given noisy time-series observations, the script infers when a change occurred and what the parameters were before and after the change.
 
